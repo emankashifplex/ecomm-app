@@ -28,7 +28,7 @@ func main() {
 	routes.SetProductRoutes(router, db)
 
 	// Start the HTTP server
-	serverAddr := "localhost:8080"
+	serverAddr := "localhost:8081"
 	fmt.Printf("Starting server on %s...\n", serverAddr)
 	err := http.ListenAndServe(serverAddr, router)
 	if err != nil {

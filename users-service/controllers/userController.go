@@ -2,10 +2,9 @@ package controllers
 
 import (
 	"context"
+	"ecomm-app/users-service/models"
 	"encoding/json"
 	"net/http"
-
-	"ecomm-app/users-service/models"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
