@@ -6,9 +6,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func SetupRoutes(router *mux.Router) {
-	router.HandleFunc("/add-to-cart", controllers.AddToCart).Methods("POST")
-	router.HandleFunc("/remove-from-cart/{productID}", controllers.RemoveFromCart).Methods("DELETE")
-	router.HandleFunc("/update-quantity/{productID}", controllers.UpdateCartItemQuantity).Methods("PUT")
-	router.HandleFunc("/calculate-total-price", controllers.CalculateTotalPrice).Methods("GET")
+func SetupRoutes(r *mux.Router, cartController *controllers.CartController) {
+	r.HandleFunc("/add-to-cart", cartController.AddItemToCart).Methods("POST")
+	r.HandleFunc("/remove-from-cart", cartController.RemoveItemFromCart).Methods("POST")
+	r.HandleFunc("/update-cart-item", cartController.UpdateCartItemQuantity).Methods("POST")
+	r.HandleFunc("/get-cart", cartController.GetCart).Methods("GET")
 }

@@ -1,41 +1,29 @@
 package main
 
 import (
-	"context"
-	"ecomm-app/shopping-cart/routes"
-	"fmt"
+	"log"
 	"net/http"
+
+	"ecomm-app/shopping-cart/controllers"
+	"ecomm-app/shopping-cart/routes"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 )
 
-var (
-	redisClient *redis.Client
-)
-
 func main() {
+	r := mux.NewRouter()
+
 	// Initialize Redis client
-	redisClient = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379", // Your Redis server address
-		Password: "",               // No password by default
-		DB:       0,                // Default DB
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379", // Change this to your Redis server address
 	})
 
-	// Ping Redis to ensure the connection is established
-	_, err := redisClient.Ping(context.Background()).Result()
-	if err != nil {
-		fmt.Println("Error connecting to Redis:", err)
-		return
-	}
+	// Create an instance of your CartController with the Redis client
+	cartController := controllers.NewCartController(redisClient)
 
-	// Initialize router
-	router := mux.NewRouter()
+	routes.SetupRoutes(r, cartController)
 
-	// Set up routes
-	routes.SetupRoutes(router)
-
-	// Start the HTTP server
-	fmt.Println("Server is running on :8080")
-	http.ListenAndServe(":8080", router)
+	http.Handle("/", r)
+	log.Fatal(http.ListenAndServe(":8082", nil))
 }

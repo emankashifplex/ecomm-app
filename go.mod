@@ -3,9 +3,11 @@ module ecomm-app
 go 1.20
 
 require (
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gorilla/mux v1.8.0
 	go.mongodb.org/mongo-driver v1.12.1
 	golang.org/x/crypto v0.12.0
+	golang.org/x/net v0.10.0
 )
 
 require (
@@ -14,7 +16,6 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-pg/pg/v10 v10.11.1 // indirect
 	github.com/go-pg/zerochecker v0.2.0 // indirect
-	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect

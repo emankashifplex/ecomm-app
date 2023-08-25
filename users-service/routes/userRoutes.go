@@ -13,5 +13,5 @@ func SetUserRoutes(router *mux.Router) {
 	router.HandleFunc("/login", controllers.LoginHandler).Methods("POST")
 	router.HandleFunc("/profile/{username}", controllers.UserProfileHandler).Methods("GET")
 	router.HandleFunc("/get-product-info/{productID}", controllers.GetProductInfo).Methods("GET")
-
+	router.HandleFunc("/get-cart", controllers.GetCartInfo).Methods("GET")
 }
