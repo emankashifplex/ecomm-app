@@ -34,7 +34,7 @@ func GetProductInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func fetchProductInfoFromCatalog(productID string) (*models.Product, error) {
-	resp, err := http.Get("http://localhost:8081/products/" + productID) // Update the URL accordingly
+	resp, err := http.Get("http://localhost:8081/products/" + productID)
 	if err != nil {
 		return nil, err
 	}

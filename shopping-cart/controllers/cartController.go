@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -8,23 +9,25 @@ import (
 	model "ecomm-app/shopping-cart/models"
 
 	"github.com/go-redis/redis/v8"
-	"golang.org/x/net/context"
 )
 
+// Handles cart-related operations
 type CartController struct {
 	RedisClient *redis.Client
 }
 
+// Creates a new CartController instance
 func NewCartController(redisClient *redis.Client) *CartController {
 	return &CartController{
 		RedisClient: redisClient,
 	}
 }
 
+// Handles adding an item to the cart.
 func (cc *CartController) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
-	// Parse request body to get product ID, quantity, and price
+	// Parses request body to get product ID, quantity, and price
 	var cartItem model.CartItem
 	err := json.NewDecoder(r.Body).Decode(&cartItem)
 	if err != nil {
@@ -32,34 +35,41 @@ func (cc *CartController) AddItemToCart(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Get user ID from request context or headers
-	userIDStr := r.Header.Get("User-Id") // Assuming you pass user ID as a header
+	// Gets user ID from request context or headers
+	userIDStr := r.Header.Get("User-Id")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
-	cartKey := getCartKey(userID)
-	cart, err := getCartFromRedis(ctx, cc.RedisClient, cartKey)
+	// Construct the Redis key for the user's cart
+	cartKey := GetCartKey(userID)
+
+	// Get the current cart from Redis
+	cart, err := GetCartFromRedis(ctx, cc.RedisClient, cartKey)
 	if err != nil {
 		http.Error(w, "Failed to retrieve cart", http.StatusInternalServerError)
 		return
 	}
 
+	// Add the item to the cart
 	cart.AddItem(cartItem.ProductID, cartItem.Quantity, cartItem.Price)
 
-	err = saveCartToRedis(ctx, cc.RedisClient, cartKey, cart)
+	// Save the updated cart to Redis
+	err = SaveCartToRedis(ctx, cc.RedisClient, cartKey, cart)
 	if err != nil {
 		http.Error(w, "Failed to update cart", http.StatusInternalServerError)
 		return
 	}
 
+	// Respond with the updated cart
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(cart)
 }
 
+// RemoveItemFromCart handles removing an item from the cart.
 func (cc *CartController) RemoveItemFromCart(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
@@ -79,26 +89,33 @@ func (cc *CartController) RemoveItemFromCart(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	cartKey := getCartKey(userID)
-	cart, err := getCartFromRedis(ctx, cc.RedisClient, cartKey)
+	// Construct the Redis key for the user's cart
+	cartKey := GetCartKey(userID)
+
+	// Get the current cart from Redis
+	cart, err := GetCartFromRedis(ctx, cc.RedisClient, cartKey)
 	if err != nil {
 		http.Error(w, "Failed to retrieve cart", http.StatusInternalServerError)
 		return
 	}
 
+	// Remove the item from the cart
 	cart.RemoveItem(productID)
 
-	err = saveCartToRedis(ctx, cc.RedisClient, cartKey, cart)
+	// Save the updated cart to Redis
+	err = SaveCartToRedis(ctx, cc.RedisClient, cartKey, cart)
 	if err != nil {
 		http.Error(w, "Failed to update cart", http.StatusInternalServerError)
 		return
 	}
 
+	// Respond with the updated cart
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(cart)
 }
 
+// UpdateCartItemQuantity handles updating the quantity of a cart item.
 func (cc *CartController) UpdateCartItemQuantity(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
@@ -121,29 +138,37 @@ func (cc *CartController) UpdateCartItemQuantity(w http.ResponseWriter, r *http.
 		return
 	}
 
-	cartKey := getCartKey(userID)
-	cart, err := getCartFromRedis(ctx, cc.RedisClient, cartKey)
+	// Construct the Redis key for the user's cart
+	cartKey := GetCartKey(userID)
+
+	// Get the current cart from Redis
+	cart, err := GetCartFromRedis(ctx, cc.RedisClient, cartKey)
 	if err != nil {
 		http.Error(w, "Failed to retrieve cart", http.StatusInternalServerError)
 		return
 	}
 
+	// Update the quantity of the cart item
 	cart.UpdateQuantity(updateData.ProductID, updateData.Quantity)
 
-	err = saveCartToRedis(ctx, cc.RedisClient, cartKey, cart)
+	// Save the updated cart to Redis
+	err = SaveCartToRedis(ctx, cc.RedisClient, cartKey, cart)
 	if err != nil {
 		http.Error(w, "Failed to update cart", http.StatusInternalServerError)
 		return
 	}
 
+	// Respond with the updated cart
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(cart)
 }
 
+// GetCart retrieves the user's cart.
 func (cc *CartController) GetCart(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
+	// Get user ID from query parameter
 	userIDStr := r.URL.Query().Get("user_id")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
@@ -151,23 +176,29 @@ func (cc *CartController) GetCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cartKey := getCartKey(userID)
-	cart, err := getCartFromRedis(ctx, cc.RedisClient, cartKey)
+	// Construct the Redis key for the user's cart
+	cartKey := GetCartKey(userID)
+
+	// Get the current cart from Redis
+	cart, err := GetCartFromRedis(ctx, cc.RedisClient, cartKey)
 	if err != nil {
 		http.Error(w, "Failed to retrieve cart", http.StatusInternalServerError)
 		return
 	}
 
+	// Respond with the user's cart
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(cart)
 }
 
-func getCartKey(userID int) string {
+// getCartKey constructs the Redis key for a user's cart.
+func GetCartKey(userID int) string {
 	return "cart:" + strconv.Itoa(userID)
 }
 
-func getCartFromRedis(ctx context.Context, client *redis.Client, key string) (*model.Cart, error) {
+// getCartFromRedis retrieves a user's cart from Redis.
+func GetCartFromRedis(ctx context.Context, client *redis.Client, key string) (*model.Cart, error) {
 	cartJSON, err := client.Get(ctx, key).Result()
 	if err == redis.Nil {
 		return model.NewCart(), nil
@@ -180,7 +211,8 @@ func getCartFromRedis(ctx context.Context, client *redis.Client, key string) (*m
 	return &cart, err
 }
 
-func saveCartToRedis(ctx context.Context, client *redis.Client, key string, cart *model.Cart) error {
+// saveCartToRedis saves a user's cart to Redis.
+func SaveCartToRedis(ctx context.Context, client *redis.Client, key string, cart *model.Cart) error {
 	cartJSON, err := json.Marshal(cart)
 	if err != nil {
 		return err

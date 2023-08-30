@@ -15,7 +15,7 @@ type ProductController struct {
 	ProductService *models.ProductService
 }
 
-// NewProductController creates a new ProductController instance
+// Constructor NewProductController creates a new ProductController instance
 func NewProductController(productService *models.ProductService) *ProductController {
 	return &ProductController{
 		ProductService: productService,

@@ -18,7 +18,7 @@ type ProductService struct {
 	DB *pg.DB
 }
 
-// NewProductService creates a new ProductService instance
+// Constructor NewProductService creates a new ProductService instance
 func NewProductService(db *pg.DB) *ProductService {
 	return &ProductService{
 		DB: db,

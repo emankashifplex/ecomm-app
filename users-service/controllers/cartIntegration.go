@@ -16,7 +16,7 @@ func GetCartInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Forward request to shopping cart service
-	cartServiceURL := "http://localhost:8082/get-cart" // Replace with the actual URL
+	cartServiceURL := "http://localhost:8082/get-cart"
 	cartServiceURL += "?user_id=" + strconv.Itoa(userID)
 
 	resp, err := http.Get(cartServiceURL)
