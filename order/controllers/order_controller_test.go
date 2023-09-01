@@ -1,4 +1,4 @@
-package main
+package controllers
 
 import (
 	"bytes"
@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"ecomm-app/order/controllers"
 	"ecomm-app/order/models"
 
 	"github.com/gorilla/mux"
@@ -17,17 +16,32 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateOrder(t *testing.T) {
-	// Create an in-memory SQLite database for testing
-	testDB, err := sql.Open("sqlite3", ":memory:")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testDB.Close()
+var testDB *sql.DB // Declare a global database connection
 
+func setup() {
+	// Open the database connection only once and reuse it
+	db, err := sql.Open("sqlite3", ":memory:")
+	if err != nil {
+		panic(err)
+	}
+	testDB = db
+}
+
+func teardown() {
+	// Close the database connection after all tests are finished
+	testDB.Close()
+}
+
+func TestMain(m *testing.M) {
+	setup()
+	defer teardown()
+	m.Run()
+}
+
+func TestCreateOrder(t *testing.T) {
 	// Initialize the router and controller
 	router := mux.NewRouter()
-	orderController := &controllers.OrderController{DB: testDB}
+	orderController := &OrderController{DB: testDB}
 	router.HandleFunc("/orders", orderController.CreateOrder).Methods("POST")
 
 	// Create a sample order to send in the request
@@ -62,20 +76,13 @@ func TestCreateOrder(t *testing.T) {
 }
 
 func TestGetOrder(t *testing.T) {
-	// Create an in-memory SQLite database for testing
-	testDB, err := sql.Open("sqlite3", ":memory:")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testDB.Close()
-
 	// Initialize the router and controller
 	router := mux.NewRouter()
-	orderController := &controllers.OrderController{DB: testDB}
+	orderController := &OrderController{DB: testDB}
 	router.HandleFunc("/orders/{orderID}", orderController.GetOrder).Methods("GET")
 
 	// Insert a sample order into the database
-	_, err = testDB.Exec("INSERT INTO orders(id, product, quantity, status, created_at) VALUES($1, $2, $3, $4,$5)",
+	_, err := testDB.Exec("INSERT INTO orders(id, product, quantity, status, created_at) VALUES($1, $2, $3, $4,$5)",
 		1, "Sample Product", 5, string(models.StatusPending), time.Now())
 	if err != nil {
 		t.Fatal(err)
@@ -95,9 +102,4 @@ func TestGetOrder(t *testing.T) {
 
 	// Check the response status code
 	assert.Equal(t, http.StatusOK, rr.Code)
-}
-
-func TestOrderService(t *testing.T) {
-	t.Run("TestCreateOrder", TestCreateOrder)
-	t.Run("TestGetOrder", TestGetOrder)
 }
