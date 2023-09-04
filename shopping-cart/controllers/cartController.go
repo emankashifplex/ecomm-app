@@ -36,7 +36,7 @@ func (cc *CartController) AddItemToCart(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Gets user ID from request context or headers
-	userIDStr := r.Header.Get("User-Id")
+	userIDStr := r.Header.Get("user_id")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
@@ -82,7 +82,7 @@ func (cc *CartController) RemoveItemFromCart(w http.ResponseWriter, r *http.Requ
 	}
 
 	// Get user ID from request context or headers
-	userIDStr := r.Header.Get("User-Id") // Assuming you pass user ID as a header
+	userIDStr := r.Header.Get("user_id") // Assuming you pass user ID as a header
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
@@ -131,7 +131,7 @@ func (cc *CartController) UpdateCartItemQuantity(w http.ResponseWriter, r *http.
 	}
 
 	// Get user ID from request context or headers
-	userIDStr := r.Header.Get("User-Id") // Assuming you pass user ID as a header
+	userIDStr := r.Header.Get("user_id") // Assuming you pass user ID as a header
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)

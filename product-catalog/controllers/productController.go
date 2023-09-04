@@ -15,7 +15,7 @@ type ProductController struct {
 	ProductService *models.ProductService
 }
 
-// Constructor NewProductController creates a new ProductController instance
+// NewProductController creates a new ProductController instance
 func NewProductController(productService *models.ProductService) *ProductController {
 	return &ProductController{
 		ProductService: productService,
@@ -66,47 +66,39 @@ func (c *ProductController) GetProductByID(w http.ResponseWriter, r *http.Reques
 	json.NewEncoder(w).Encode(product)
 }
 
-// SearchProducts searches for products based on a query string
-func (c *ProductController) SearchProducts(w http.ResponseWriter, r *http.Request) {
+// SearchAndFilterProducts searches for products based on a query string and applies filters if query parameters are provided
+func (c *ProductController) SearchAndFilterProducts(w http.ResponseWriter, r *http.Request) {
 	// Extract the search query from the URL query parameters
 	query := r.URL.Query().Get("query")
-	if query == "" {
-		http.Error(w, "Missing query parameter", http.StatusBadRequest)
-		return
-	}
 
-	// Call the ProductService to search for products using the given query
-	products, err := c.ProductService.SearchProducts(query)
-	if err != nil {
-		http.Error(w, "Error searching products", http.StatusInternalServerError)
-		return
-	}
-
-	// Respond with the search results as a JSON-encoded response
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(products)
-}
-
-// Filters products based on given criteria
-func (c *ProductController) FilterProducts(w http.ResponseWriter, r *http.Request) {
 	// Extract filter criteria from the URL query parameters
 	minPriceStr := r.URL.Query().Get("minPrice")
 	maxPriceStr := r.URL.Query().Get("maxPrice")
 	availabilityStr := r.URL.Query().Get("availability")
 
-	// Convert filter criteria to appropriate data types
-	minPrice, _ := strconv.ParseFloat(minPriceStr, 64)
-	maxPrice, _ := strconv.ParseFloat(maxPriceStr, 64)
-	availability, _ := strconv.ParseBool(availabilityStr)
+	// Initialize filter criteria variables
+	var minPrice, maxPrice float64
+	var availability bool
 
-	// Call the ProductService to filter products based on the provided criteria
-	products, err := c.ProductService.FilterProducts(minPrice, maxPrice, availability)
+	// Convert filter criteria to appropriate data types if provided
+	if minPriceStr != "" {
+		minPrice, _ = strconv.ParseFloat(minPriceStr, 64)
+	}
+	if maxPriceStr != "" {
+		maxPrice, _ = strconv.ParseFloat(maxPriceStr, 64)
+	}
+	if availabilityStr != "" {
+		availability, _ = strconv.ParseBool(availabilityStr)
+	}
+
+	// Call the ProductService to search for products using the given query and apply filters
+	products, err := c.ProductService.SearchAndFilterProducts(query, minPrice, maxPrice, availability)
 	if err != nil {
-		http.Error(w, "Error filtering products", http.StatusInternalServerError)
+		http.Error(w, "Error searching/filtering products", http.StatusInternalServerError)
 		return
 	}
 
-	// Respond with the filtered products as a JSON-encoded response
+	// Respond with the search results or filtered products as a JSON-encoded response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(products)
 }

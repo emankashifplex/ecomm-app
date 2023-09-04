@@ -1,8 +1,6 @@
 package models
 
-import (
-	"github.com/go-pg/pg/v10"
-)
+import "github.com/go-pg/pg/v10"
 
 // Product represents a product's information
 type Product struct {
@@ -25,7 +23,7 @@ func NewProductService(db *pg.DB) *ProductService {
 	}
 }
 
-// CreateProduct inserts a new product record into the database
+// CreateProduct creates a new product in the database.
 func (s *ProductService) CreateProduct(product *Product) error {
 	_, err := s.DB.Model(product).Insert()
 	return err
@@ -48,28 +46,27 @@ func (s *ProductService) GetProductByID(id int) (*Product, error) {
 	return product, nil
 }
 
-// SearchProducts searches for products with names containing the given query.
-func (s *ProductService) SearchProducts(query string) ([]*Product, error) {
+// SearchAndFilterProducts searches for products with names containing the given query and applies filters
+func (s *ProductService) SearchAndFilterProducts(query string, minPrice, maxPrice float64, availability bool) ([]*Product, error) {
 	var products []*Product
-	err := s.DB.Model(&products).Where("name ILIKE ?", "%"+query+"%").Select()
-	if err != nil {
-		return nil, err
-	}
-	return products, nil
-}
+	q := s.DB.Model(&products).Where("name ILIKE ?", "%"+query+"%")
 
-// FilterProducts filters products based on price range and availability
-func (s *ProductService) FilterProducts(minPrice, maxPrice float64, availability bool) ([]*Product, error) {
-	var products []*Product
-	q := s.DB.Model(&products).
-		Where("price >= ?", minPrice).
-		Where("price <= ?", maxPrice)
+	if minPrice > 0 {
+		q = q.Where("price >= ?", minPrice)
+	}
+
+	if maxPrice > 0 {
+		q = q.Where("price <= ?", maxPrice)
+	}
+
 	if availability {
 		q = q.Where("availability = ?", true)
 	}
+
 	err := q.Select()
 	if err != nil {
 		return nil, err
 	}
+
 	return products, nil
 }

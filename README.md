@@ -48,3 +48,4 @@ curl -X POST -H "Content-Type: application/json" -d '{
     "ShippingOption": "standard"
 }' http://localhost:8084/calculate_shipping_cost
 
+TEST_DATABASE_URL=""postgres://eman:123@localhost:5432/product_data"
