@@ -7,8 +7,8 @@ import (
 )
 
 func SetupRoutes(r *mux.Router, cartController *controllers.CartController) {
-	r.HandleFunc("/add-to-cart", cartController.AddItemToCart).Methods("POST")
-	r.HandleFunc("/remove-from-cart", cartController.RemoveItemFromCart).Methods("POST")
-	r.HandleFunc("/update-cart-item", cartController.UpdateCartItemQuantity).Methods("POST")
-	r.HandleFunc("/get-cart", cartController.GetCart).Methods("GET")
+	r.HandleFunc("/add", cartController.AddItemToCart).Methods("POST")
+	r.HandleFunc("/remove", cartController.RemoveItemFromCart).Methods("POST")
+	r.HandleFunc("/update", cartController.UpdateCartItemQuantity).Methods("POST")
+	r.HandleFunc("/get", cartController.GetCart).Methods("GET")
 }

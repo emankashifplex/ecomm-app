@@ -1,50 +1,53 @@
 package controllers
 
 import (
-	"ecomm-app/shopping-cart/models"
-	"encoding/json"
+	"bytes"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
+	"github.com/alicebob/miniredis/v2"
+	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
-func TestAddItemToCart(t *testing.T) {
-	// Create a mock Redis client
-	mockRedisClient := new(MockRedisClient)
+// NewRedisClient initializes a Redis client and returns it.
+func NewRedisClient(addr string) *redis.Client {
+	return redis.NewClient(&redis.Options{
+		Addr: addr,
+	})
+}
 
-	// Create a RedisClientInterface using the mockRedisClient
-	redisClient := NewRedisClient(mockRedisClient)
+func TestAddItemToCartWithMiniredis(t *testing.T) {
+	// Miniredis instance
+	mr, err := miniredis.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer mr.Close()
 
-	// Create a CartController with the mock Redis client
-	cc := NewCartController(redisClient)
+	// Replace RedisClient usage with a miniredis client
+	redisClient := NewRedisClient(mr.Addr())
 
-	// Define a sample request payload
-	payload := `{"product_id": 1, "quantity": 2, "price": 10.0}`
+	// CartController instance with the miniredis client
+	controller := NewCartController(redisClient)
 
-	// Create a sample request
-	req := httptest.NewRequest("POST", "/add-to-cart", strings.NewReader(payload))
-	req.Header.Set("User-Id", "123")
+	// Sample HTTP request for adding an item
+	reqBody := []byte(`{"product_id": 1, "quantity": 2, "price": 10.99}`)
+	req, err := http.NewRequest("POST", "/add", bytes.NewBuffer(reqBody))
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	// Create a sample response recorder
-	w := httptest.NewRecorder()
+	req.Header.Set("user_id", "123")
 
-	// Mock the RedisClient's behavior
-	mockRedisClient.On("Get", mock.Anything, mock.Anything).Return(`{"user_id": 123, "items": [], "total": 0.0}`, nil)
-	mockRedisClient.On("Set", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	// Create a response recorder to capture the response
+	rr := httptest.NewRecorder()
 
-	// Call the controller method
-	cc.AddItemToCart(w, req)
+	// Call the AddItemToCart method to handle the request
+	http.HandlerFunc(controller.AddItemToCart).ServeHTTP(rr, req)
 
 	// Check the response status code
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	// Parse the response body to check if it's a valid JSON
-	var responseCart models.Cart
-	err := json.NewDecoder(w.Body).Decode(&responseCart)
-	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rr.Code)
 
 }

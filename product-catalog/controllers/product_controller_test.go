@@ -13,7 +13,7 @@ type MockDatabase interface {
 	GetProductByID(id int) (*models.Product, error)
 }
 
-// MockDB implements the MockDatabase interface for testing.
+// MockDB implements the MockDatabase interface for testing
 type MockDB struct {
 	Products map[int]*models.Product
 }

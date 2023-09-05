@@ -3,70 +3,132 @@ package routes
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+
+	"ecomm-app/shopping-cart/controllers"
 
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
-// MockCartController is a mock implementation of the CartController.
-type MockCartController struct {
-	mock.Mock
-}
+func TestGetCartRoute(t *testing.T) {
+	// new router instance
+	r := mux.NewRouter()
 
-func (m *MockCartController) AddItemToCart(w http.ResponseWriter, r *http.Request) {
-	m.Called(w, r)
-}
+	// mock CartController instance
+	mockCartController := &controllers.CartController{}
 
-func (m *MockCartController) RemoveItemFromCart(w http.ResponseWriter, r *http.Request) {
-	m.Called(w, r)
-}
+	// Add the route to the router
+	SetupRoutes(r, mockCartController)
 
-func (m *MockCartController) UpdateCartItemQuantity(w http.ResponseWriter, r *http.Request) {
-	m.Called(w, r)
-}
-
-func (m *MockCartController) GetCart(w http.ResponseWriter, r *http.Request) {
-	m.Called(w, r)
-}
-
-func TestSetupRoutes(t *testing.T) {
-	// Create a new router
-	router := mux.NewRouter()
-
-	// Create a mock CartController
-	mockCartController := new(MockCartController)
-
-	// Set up routes using the mock CartController
-	SetupRoutes(router, mockCartController)
-
-	// Define the expected route paths
-	expectedRoutes := []struct {
-		path   string
-		method string
-	}{
-		{"/add-to-cart", "POST"},
-		{"/remove-from-cart", "POST"},
-		{"/update-cart-item", "POST"},
-		{"/get-cart", "GET"},
+	// Create a request to the /get route
+	req, err := http.NewRequest("GET", "/get?user_id=123", nil)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	// Verify that the expected routes are registered
-	for _, route := range expectedRoutes {
-		match := false
-		router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-			r := route.MatcherFunc(func(req *http.Request, rm *mux.RouteMatch) bool {
-				return req.URL.Path == route.PathTemplate() && req.Method == route.GetMethods()[0]
-			})
+	// Create a response recorder to capture the response
+	rr := httptest.NewRecorder()
 
-			if r.Match(httptest.NewRequest(route.method, route.path, nil), &mux.RouteMatch{}) {
-				match = true
-			}
+	// Serve the request using the router
+	r.ServeHTTP(rr, req)
 
-			return nil
-		})
+	// Check the response status code
+	assert.Equal(t, http.StatusOK, rr.Code)
 
-		assert.True(t, match, "Expected route %s %s to be registered", route.method, route.path)
+}
+
+func TestRemoveItemFromCartRoute(t *testing.T) {
+	// New router instance
+	r := mux.NewRouter()
+
+	// Mock CartController instance
+	mockCartController := &controllers.CartController{}
+
+	// Add the route to the router
+	SetupRoutes(r, mockCartController)
+
+	// Create a sample request body for removing an item
+	reqBody := `1` // Assuming the product ID to remove is 1
+
+	// Create a request to the /remove route
+	req, err := http.NewRequest("POST", "/remove", strings.NewReader(reqBody))
+	if err != nil {
+		t.Fatal(err)
 	}
+
+	req.Header.Set("user_id", "123")
+
+	// Create a response recorder to capture the response
+	rr := httptest.NewRecorder()
+
+	// Serve the request using the router
+	r.ServeHTTP(rr, req)
+
+	// Check the response status code
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+}
+
+func TestUpdateCartItemQuantityRoute(t *testing.T) {
+	// New router instance
+	r := mux.NewRouter()
+
+	// Mock CartController instance
+	mockCartController := &controllers.CartController{}
+
+	// Add the route to the router
+	SetupRoutes(r, mockCartController)
+
+	// Create a sample request body for updating the quantity
+	reqBody := `{"product_id": 1, "quantity": 5}`
+
+	// Create a request to the /update route
+	req, err := http.NewRequest("POST", "/update", strings.NewReader(reqBody))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req.Header.Set("user_id", "123")
+
+	// Create a response recorder to capture the response
+	rr := httptest.NewRecorder()
+
+	// Serve the request using the router
+	r.ServeHTTP(rr, req)
+
+	// Check the response status code
+	assert.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestAddItemToCartRoute(t *testing.T) {
+	// new router instance
+	r := mux.NewRouter()
+
+	// mock CartController instance
+	mockCartController := &controllers.CartController{}
+
+	// Add the route to the router
+	SetupRoutes(r, mockCartController)
+
+	// Sample request body
+	reqBody := `{"product_id": 1, "quantity": 2, "price": 10.99}`
+
+	// Create a request to the /add route
+	req, err := http.NewRequest("POST", "/add", strings.NewReader(reqBody))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("user_id", "123")
+
+	// Create a response recorder to capture the response
+	rr := httptest.NewRecorder()
+
+	// Serve the request using the router
+	r.ServeHTTP(rr, req)
+
+	// Check the response status code
+	assert.Equal(t, http.StatusOK, rr.Code)
+
 }
