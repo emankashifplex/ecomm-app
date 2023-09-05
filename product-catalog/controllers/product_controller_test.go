@@ -1,61 +1,78 @@
 package controllers
 
 import (
-	"ecomm-app/product-catalog/models"
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"ecomm-app/product-catalog/models"
+
+	"github.com/go-pg/pg/v10"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/assert"
 )
 
-// interface for database operations.
-type MockDatabase interface {
-	CreateProduct(product *models.Product) error
-	GetProductByID(id int) (*models.Product, error)
-}
+var testDB *pg.DB // Declare a global database connection
 
-// MockDB implements the MockDatabase interface for testing
-type MockDB struct {
-	Products map[int]*models.Product
-}
-
-func (m *MockDB) CreateProduct(product *models.Product) error {
-	m.Products[product.ID] = product
-	return nil
-}
-
-func (m *MockDB) GetProductByID(id int) (*models.Product, error) {
-	product, ok := m.Products[id]
-	if !ok {
-		return nil, Errors.new("Product not found")
+func setup() {
+	// Connect to the database only once and reuse it
+	options := &pg.Options{
+		User:     "eman",
+		Password: "123",
+		Database: "test",
+		Addr:     "localhost:5432",
 	}
-	return product, nil
+	db := pg.Connect(options)
+	testDB = db
 }
 
-func TestProductService_CreateProduct(t *testing.T) {
-	// Create a new ProductService instance using the mock database
-	mockDB := &MockDB{
-		Products: make(map[int]*models.Product),
-	}
-	service := models.NewProductService(mockDB)
+func teardown() {
+	// Close the database connection after all tests are finished
+	testDB.Close()
+}
 
-	// Create a sample product for testing
-	product := &models.Product{
-		ID:           1, // Set a unique ID for testing
-		Name:         "Test Product",
-		Description:  "Test description",
-		Price:        29.99,
+func TestMain(m *testing.M) {
+	setup()
+	defer teardown()
+	m.Run()
+}
+
+func TestCreateProduct(t *testing.T) {
+	// Initialize the router and controller
+	router := mux.NewRouter()
+	productController := NewProductController(models.NewProductService(testDB))
+	router.HandleFunc("/products", productController.CreateProduct).Methods("POST")
+
+	// Create a sample product to send in the request
+	product := models.Product{
+		Name:         "Sample Product",
+		Description:  "Sample Description",
+		Price:        19.99,
 		Availability: true,
 	}
 
-	// Call the CreateProduct method
-	err := service.CreateProduct(product)
-	require.NoError(t, err, "Creating product should not return an error")
+	// Convert the product to JSON
+	productJSON, err := json.Marshal(product)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	// Fetch the product from the mock database and ensure it matches the created product
-	fetchedProduct, err := service.GetProductByID(product.ID)
-	require.NoError(t, err, "Fetching product should not return an error")
-	require.Equal(t, product.Name, fetchedProduct.Name, "Product name should match")
-	require.Equal(t, product.Description, fetchedProduct.Description, "Product description should match")
-	require.Equal(t, product.Price, fetchedProduct.Price, "Product price should match")
-	require.Equal(t, product.Availability, fetchedProduct.Availability, "Product availability should match")
+	// Create a request
+	req, err := http.NewRequest("POST", "/products", bytes.NewBuffer(productJSON))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a response recorder to capture the response
+	rr := httptest.NewRecorder()
+
+	// Serve the request
+	router.ServeHTTP(rr, req)
+
+	// Check the response status code
+	assert.Equal(t, http.StatusCreated, rr.Code)
+
+	// You can add further assertions to check the response body, database state, etc.
 }
