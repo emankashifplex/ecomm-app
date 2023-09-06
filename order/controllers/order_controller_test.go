@@ -47,7 +47,8 @@ func TestCreateOrder(t *testing.T) {
 	// Create a sample order to send in the request
 	order := models.Order{
 		ID:        1,
-		Product:   "Sample Product",
+		ProductID: 1,
+		UserID:    123,
 		Quantity:  5,
 		Status:    "Pending",
 		CreatedAt: time.Now(),

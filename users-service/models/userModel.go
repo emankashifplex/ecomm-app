@@ -47,3 +47,20 @@ func FindUserByUsername(db *mongo.Database, username string) (*User, error) {
 func VerifyPassword(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
+
+// CheckUserExistsInDatabase checks if a user with the given userID exists in the database.
+func DoesUserExist(db *mongo.Database, userID int) (bool, error) {
+	usersCollection := db.Collection("users")
+
+	// Create a filter to find a user by their ID
+	filter := bson.M{"_id": userID}
+
+	// Use the CountDocuments method to check if a user with the provided ID exists
+	count, err := usersCollection.CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return false, err
+	}
+
+	// If count is greater than 0, a user with the provided ID exists
+	return count > 0, nil
+}

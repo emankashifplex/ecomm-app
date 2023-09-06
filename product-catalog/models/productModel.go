@@ -9,6 +9,7 @@ type Product struct {
 	Description  string  `pg:"description"`
 	Price        float64 `pg:"price"`
 	Availability bool    `pg:"availability"`
+	Quantity     int     `pg:"id,pk"`
 }
 
 // ProductService provides methods to interact with products in the database
@@ -69,4 +70,26 @@ func (s *ProductService) SearchAndFilterProducts(query string, minPrice, maxPric
 	}
 
 	return products, nil
+}
+
+// CheckProductAvailability checks if a certain quantity of a product is available.
+func (s *ProductService) CheckProductAvailability(productID, quantity int) (bool, error) {
+	// Create a new empty Product instance to hold the retrieved data.
+	product := new(Product)
+
+	// SELECT query to retrieve a product based on the given ID.
+	err := s.DB.Model(product).
+		Where("id = ?", productID).
+		Select()
+
+	if err != nil {
+		return false, err
+	}
+
+	// Check if the product's availability is greater than or equal to the requested quantity.
+	if product.Quantity >= quantity {
+		return true, nil
+	}
+
+	return false, nil
 }

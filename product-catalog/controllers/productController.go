@@ -102,3 +102,29 @@ func (c *ProductController) SearchAndFilterProducts(w http.ResponseWriter, r *ht
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(products)
 }
+
+// CheckProductAvailability checks if a certain quantity of a product is available.
+func (c *ProductController) CheckProductAvailability(w http.ResponseWriter, r *http.Request) {
+	// Extract productID and quantity from the request query parameters
+	productIDStr := r.URL.Query().Get("productID")
+	quantityStr := r.URL.Query().Get("quantity")
+
+	// Parse productID and quantity as integers
+	productID, err := strconv.Atoi(productIDStr)
+	if err != nil {
+		http.Error(w, "Invalid productID", http.StatusBadRequest)
+		return
+	}
+	quantity, err := strconv.Atoi(quantityStr)
+	if err != nil {
+		http.Error(w, "Invalid quantity", http.StatusBadRequest)
+		return
+	}
+
+	// Call a function to check product availability based on productID and quantity
+	productAvailable, err := c.ProductService.CheckProductAvailability(productID, quantity)
+
+	// Return true or false based on product availability
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(productAvailable)
+}

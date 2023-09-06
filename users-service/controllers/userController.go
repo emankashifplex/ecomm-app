@@ -4,7 +4,9 @@ import (
 	"context"
 	"ecomm-app/users-service/models"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -117,4 +119,28 @@ func UserProfileHandler(w http.ResponseWriter, r *http.Request) {
 	// Return the user profile as JSON response.
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
+}
+
+// Check if a user exists by userID
+func CheckUserExistenceHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract userID from the request parameters
+	userIDStr := r.URL.Query().Get("user_id")
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		http.Error(w, "Invalid userID", http.StatusBadRequest)
+		return
+	}
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	db := client.Database("ecommerce")
+	// Check if the user exists
+	exists, err := models.DoesUserExist(db, userID)
+
+	// Respond with true if the user exists, false if not
+	if exists {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "true")
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(w, "false")
+	}
 }

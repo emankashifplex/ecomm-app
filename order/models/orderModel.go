@@ -7,7 +7,8 @@ import (
 // Represents an order placed for a product
 type Order struct {
 	ID        int
-	Product   string
+	ProductID int
+	UserID    int
 	Quantity  int
 	Status    string
 	CreatedAt time.Time

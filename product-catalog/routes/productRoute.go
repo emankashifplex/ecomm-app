@@ -14,4 +14,5 @@ func SetProductRoutes(router *mux.Router, db *pg.DB) {
 	router.HandleFunc("/products", productController.CreateProduct).Methods("POST")
 	router.HandleFunc("/products/{id:[0-9]+}", productController.GetProductByID).Methods("GET")
 	router.HandleFunc("/products/search", productController.SearchAndFilterProducts).Methods("GET")
+	router.HandleFunc("/availability", productController.CheckProductAvailability).Methods("GET")
 }

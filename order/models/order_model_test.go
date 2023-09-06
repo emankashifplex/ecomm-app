@@ -9,7 +9,8 @@ func TestOrder(t *testing.T) {
 	// Create a sample order
 	order := Order{
 		ID:        1,
-		Product:   "Sample Product",
+		ProductID: 1,
+		UserID:    123,
 		Quantity:  5,
 		Status:    string(StatusPending),
 		CreatedAt: time.Now(),
@@ -19,8 +20,8 @@ func TestOrder(t *testing.T) {
 	if order.ID != 1 {
 		t.Errorf("Expected order ID to be 1, but got %d", order.ID)
 	}
-	if order.Product != "Sample Product" {
-		t.Errorf("Expected product name to be 'Sample Product', but got '%s'", order.Product)
+	if order.ProductID != 1 {
+		t.Errorf("Expected product ID to be 1, but got '%d'", order.ProductID)
 	}
 	if order.Quantity != 5 {
 		t.Errorf("Expected order quantity to be 5, but got %d", order.Quantity)
