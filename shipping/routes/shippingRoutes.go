@@ -6,5 +6,5 @@ import (
 )
 
 func SetupRoutes() {
-	http.HandleFunc("/calculate_shipping_cost", controllers.CalculateShippingCostHandler)
+	http.HandleFunc("/calculateshippingcost", controllers.CalculateShippingCostHandler)
 }

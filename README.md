@@ -6,10 +6,6 @@ curl -X POST -H "Content-Type: application/json" -d '{"username": "yourusername"
 curl -X POST -H "Content-Type: application/json" -d '{"username": "yourusername", "password": "yourpassword"}' http://localhost:8080/login
 ## User Profile 
 curl http://localhost:8080/profile/yourusername
-## Get Cart Endpoint
-curl http://localhost:8080/get-cart
-## Get Product Endpoint
-curl http://localhost:8080/get-product-info/yourproductID
 
 # Product-catalog
 

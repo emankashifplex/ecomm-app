@@ -24,7 +24,7 @@ func TestProductRoutes(t *testing.T) {
 	}{
 		{"GET", "/products", http.StatusMethodNotAllowed}, // Expect a 405 Method Not Allowed for POST
 		{"GET", "/products/123", http.StatusNotFound},     // Expect a 404 Not Found for GET
-		{"GET", "/products/search", http.StatusOK},        // Expect a 200 OK for GET
+		{"GET", "/products/search", http.StatusOK},        // Expect a 200 OK for GE
 	}
 
 	for _, tc := range testCases {

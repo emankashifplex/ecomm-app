@@ -24,5 +24,3 @@ func TestCalculateShippingCost(t *testing.T) {
 	// Use the assertion library to compare expected and actual values
 	assert.Equal(t, expectedCost, actualCost, "Shipping costs do not match for expedited option")
 }
-
-// Other test cases for standard and overnight shipping options can be written similarly.

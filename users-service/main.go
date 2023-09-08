@@ -8,6 +8,7 @@ import (
 	"ecomm-app/users-service/routes"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -28,9 +29,18 @@ func main() {
 
 	// Handle all incoming requests using the router
 	http.Handle("/", router)
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5500/frontend/index.html"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	})
+
+	// Use the CORS middleware to wrap router
+	handler := c.Handler(router)
 
 	// Start the HTTP server on port 8080
-	err = http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(":8080", handler)
 	if err != nil {
 		log.Fatal("Error starting server:", err)
 	}
