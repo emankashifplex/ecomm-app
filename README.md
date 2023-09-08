@@ -14,9 +14,7 @@ curl -X POST -d '{"name": "Sample Product", "description": "This is a sample pro
 ## Get product by ID
 curl http://localhost:8081/products/{productID}
 ## Search Products
-curl http://localhost:8081/products/search?query=sample
-## Filter Products
-curl http://localhost:8081/products/filter?minPrice=10&maxPrice=50&availability=true
+curl http://localhost:8081/products/search?query=sample&minPrice=10&maxPrice=50&availability=true
 
 # Shopping-cart
 ## Add item to cart
@@ -44,4 +42,6 @@ curl -X POST -H "Content-Type: application/json" -d '{
     "ShippingOption": "standard"
 }' http://localhost:8084/calculate_shipping_cost
 
-TEST_DATABASE_URL=""postgres://eman:123@localhost:5432/product_data"
+# Email
+## Send confirmation email
+curl "http://localhost:8085/email?user_id=123&order_id=456"

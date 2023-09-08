@@ -30,8 +30,8 @@ func main() {
 	// Handle all incoming requests using the router
 	http.Handle("/", router)
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5500/frontend/index.html"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedOrigins:   []string{"http://localhost:5500"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
 	})
