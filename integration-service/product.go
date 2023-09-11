@@ -86,7 +86,7 @@ func searchProducts(query string, minPrice, maxPrice float64, availability bool)
 		fmt.Printf("Product search results for query '%s':\n", query)
 		// Process and display the search results.
 		body, _ := ioutil.ReadAll(resp.Body)
-		fmt.Println(string(body)) // You can parse and format the results as needed.
+		fmt.Println(string(body))
 	} else {
 		fmt.Println("Product search failed.")
 	}

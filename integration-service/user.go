@@ -8,9 +8,13 @@ import (
 	"net/http"
 )
 
+// registerUser simulates user registration by sending a POST request to the registration API.
 func registerUser(username, password string) int {
+	// Prepare user registration data.
 	data := map[string]string{"username": username, "password": password}
 	jsonData, _ := json.Marshal(data)
+
+	// Send the registration request.
 	resp, err := http.Post("http://localhost:8080/register", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		fmt.Println("Error registering user:", err)
@@ -18,9 +22,10 @@ func registerUser(username, password string) int {
 	}
 	defer resp.Body.Close()
 
+	// Check the response status code to determine if registration was successful.
 	if resp.StatusCode == 201 {
 		fmt.Println("User registered successfully.")
-		// Extract and return the user ID.
+		// Extract and return the user ID from the response.
 		body, _ := ioutil.ReadAll(resp.Body)
 		var result map[string]int
 		json.Unmarshal(body, &result)
@@ -31,10 +36,13 @@ func registerUser(username, password string) int {
 	return 0
 }
 
-// Simulate user login and return the session token.
+// loginUser simulates user login by sending a POST request to the login API.
 func loginUser(username, password string) string {
+	// Prepare login data.
 	data := map[string]string{"username": username, "password": password}
 	jsonData, _ := json.Marshal(data)
+
+	// Send the login request.
 	resp, err := http.Post("http://localhost:8080/login", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		fmt.Println("Error logging in:", err)
@@ -42,9 +50,10 @@ func loginUser(username, password string) string {
 	}
 	defer resp.Body.Close()
 
+	// Check the response status code to determine if login was successful.
 	if resp.StatusCode == http.StatusOK {
 		fmt.Println("User logged in successfully.")
-		// Extract and return the session token.
+		// Extract and return the session token from the response.
 		body, _ := ioutil.ReadAll(resp.Body)
 		var result map[string]string
 		json.Unmarshal(body, &result)
